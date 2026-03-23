@@ -7,3 +7,6 @@
 [submodule "external/rtmidi"]
 	path = external/rtmidi
 	url = git@github.com:thestk/rtmidi.git
+[submodule "external/readerwriterqueue"]
+	path = external/readerwriterqueue
+	url = git@github.com:cameron314/readerwriterqueue.git

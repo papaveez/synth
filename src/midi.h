@@ -19,6 +19,7 @@ enum class MidiStatus : uint8_t {
 };
 
 
+// singleton MIDI handler class
 class MidiHandler {
     static std::atomic<bool> done;
     bool ready = false;

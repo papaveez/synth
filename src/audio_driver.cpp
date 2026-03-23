@@ -3,30 +3,34 @@
 
 
 void 
-AudioDriver::data_callback(ma_device* device, void* output, 
+Audio::data_callback(ma_device* device, void* output, 
                            const void* input, ma_uint32 frame_count) 
 {
-    if (input == nullptr) return;
-    const float* in = (const float*) input;
+    Audio* audio_driver = (Audio*) device->pUserData;
+
     float* out = (float*) output;
+    float* buf = nullptr;
 
-    AudioDriver* audio_driver = (AudioDriver*) device->pUserData;
+    while (audio_driver->buffer_queue.try_dequeue(buf)) {}
+    if (buf == nullptr) return;
 
-    if (audio_driver->callback != nullptr) {
-        audio_driver->callback(out, frame_count);
-    }
+    std::memcpy(out, buf, sizeof(float)*frame_count);
+    audio_driver->free_list.enqueue(buf);
 }
  
 
-AudioDriver::AudioDriver(size_t sample_rate, size_t frame_count,  void (*callback)(float*, const size_t)) :
-    callback(callback),
+Audio::Audio(size_t sample_rate, size_t frame_count, size_t num_bufs) :
     sample_rate(sample_rate),
     frame_count(frame_count),
-    cfg(ma_device_config_init(ma_device_type_duplex))
+    cfg(ma_device_config_init(ma_device_type_playback)),
+    buffers(new float[num_bufs*frame_count]),
+    buffer_queue(num_bufs),
+    free_list(num_bufs)
 {
-    // initialise ma device
-    cfg.capture.format = ma_format_f32;
-    cfg.capture.channels = 1;
+    for (size_t i=0;i<num_bufs;++i) {
+        free_list.enqueue(buffers +i*frame_count);
+    }
+
     cfg.playback.format = ma_format_f32;
     cfg.playback.channels = 1;
 
@@ -41,19 +45,28 @@ AudioDriver::AudioDriver(size_t sample_rate, size_t frame_count,  void (*callbac
     }
 }
 
-AudioDriver::AudioDriver() : AudioDriver(44100, 64, nullptr) {}
+Audio::Audio() : Audio(44100, 64, 256) {}
 
-AudioDriver::~AudioDriver() {
+Audio::~Audio() {
     ma_device_uninit(&device);
+    free(buffers);
 }
 
-void AudioDriver::start() {
+void Audio::start() {
     ma_device_start(&device);
 }
 
-void AudioDriver::stop() {
+void Audio::stop() {
     ma_device_stop(&device);
 }
 
-size_t AudioDriver::get_sample_rate() const { return sample_rate; }
+void Audio::push_buffer(const float* buf) {
+    float* in_queue;
+    free_list.wait_dequeue(in_queue);
+
+    std::memcpy(in_queue, buf, sizeof(float)*frame_count);
+    buffer_queue.enqueue(in_queue);
+}
+
+size_t Audio::get_sample_rate() const { return sample_rate; }
 

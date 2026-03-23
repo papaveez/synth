@@ -15,7 +15,7 @@ SRC_DIR = src
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/synth
 
-EXTERNAL_DIRS = external/kissfft external/miniaudio external/rtmidi
+EXTERNAL_DIRS = external/kissfft external/miniaudio external/rtmidi external/readerwriterqueue
 
 CXXFLAGS += $(addprefix -I, $(EXTERNAL_DIRS))
 
