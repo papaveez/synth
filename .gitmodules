@@ -1,0 +1,9 @@
+[submodule "external/miniaudio"]
+	path = external/miniaudio
+	url = git@github.com:mackron/miniaudio.git
+[submodule "external/kissfft"]
+	path = external/kissfft
+	url = git@github.com:mborgerding/kissfft.git
+[submodule "external/rtmidi"]
+	path = external/rtmidi
+	url = git@github.com:thestk/rtmidi.git
