@@ -51,13 +51,18 @@ struct Envelope {
     struct Params {
         Param attack  {0.01f};
         Param decay   {1.0f};
-        Param release {0.1f};
+        Param release {0.2f};
     } params;
 
     float get_coeff(const Voice& voice);
     bool is_done(const Voice& voice);
 };
 
+
+
+struct Compressor {
+
+};
 
 struct Synth : Keyboard {
     const uint8_t min_midi_id;
